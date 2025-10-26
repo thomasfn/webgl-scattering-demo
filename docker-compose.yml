@@ -1,0 +1,9 @@
+services:
+  node:
+    image: node:latest
+    entrypoint: sh /WebGLScatteringDemo/entrypoint.sh
+    working_dir: /WebGLScatteringDemo
+    volumes:
+     - .:/WebGLScatteringDemo
+    ports:
+     - 3000:3000

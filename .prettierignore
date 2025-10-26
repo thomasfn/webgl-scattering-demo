@@ -1,0 +1,6 @@
+/node_modules
+/.next
+.prettierrc
+docker-compose.yml
+eslint.config.mjs
+*.json
