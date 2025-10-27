@@ -1,5 +1,8 @@
 import { BaseResource } from "../base-resource";
 
+/**
+ * Wrapper around a WebGL buffer.
+ */
 export abstract class BaseBuffer extends BaseResource {
   public readonly buffer: WebGLBuffer;
 

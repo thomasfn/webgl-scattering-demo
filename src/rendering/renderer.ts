@@ -18,6 +18,10 @@ const cameraOrbitDistance = 4.0;
 
 const tmpVec3_1 = vec3.create();
 
+/**
+ * Singleton that hosts the high level managers and rendering systems, as well as the current scene.
+ * The main entry-point of the WebGL application.
+ */
 export class Renderer {
   private readonly _context: WebGL2RenderingContext;
   private _disposed: boolean = false;
@@ -28,8 +32,6 @@ export class Renderer {
   private readonly _state: RendererState;
   private readonly _shaderManager: ShaderManager;
   private readonly _envManager: EnvManager;
-
-  private _time: number = 0.0;
 
   private readonly _scenes: BaseScene[] = [];
 
@@ -46,18 +48,30 @@ export class Renderer {
   private _cameraPitch: number = 0;
   private _cameraZoom: number = 0;
 
+  /**
+   * Gets the possible scenes that can be switched to.
+   */
   public get scenes(): readonly BaseScene[] {
     return this._scenes;
   }
 
+  /**
+   * Gets the currently active scene.
+   */
   public get currentScene() {
     return this._currentScene;
   }
 
+  /**
+   * Gets all possible selectable environments.
+   */
   public get envNames() {
     return this._envManager.envNames;
   }
 
+  /**
+   * Gets the name of the current selected environment.
+   */
   public get currentEnvName() {
     return this._currentEnvName;
   }
@@ -73,15 +87,20 @@ export class Renderer {
     this._shaderManager = new ShaderManager(context, this._resourceManager, this._assetManager);
     this._envManager = new EnvManager(context, this._assetManager);
 
+    // Makes f16 framebuffers renderable - needed for HDR support (+ the precomputed PBR textures)
     const extColorBufferHalfFloat = this._context.getExtension("EXT_color_buffer_half_float");
     if (!extColorBufferHalfFloat) {
       throw new Error("EXT_color_buffer_half_float is not available");
     }
 
+    // Start preloading environment maps
     this._envManager.getEnv("PuzzleRoom");
     this._envManager.getEnv("Tunnels");
   }
 
+  /**
+   * Asynchronously initialise the renderer, including acquiring all needed resources from the network.
+   */
   public async initRenderer(): Promise<void> {
     await SceneRenderer.preloadShaders(this._shaderManager);
 
@@ -99,7 +118,7 @@ export class Renderer {
 
     // Setup scene renderer
     this._sceneRenderer = this._resourceManager.addResource(
-      new SceneRenderer(this._context, this._state, this._shaderManager, this._assetManager, this._mainViewport),
+      new SceneRenderer(this._context, this._state, this._shaderManager, this._mainViewport),
     );
     this._sceneRenderer.environmentMap = this._environmentMap;
     this.selectEnv("PuzzleRoom");
@@ -126,9 +145,14 @@ export class Renderer {
     await Promise.all(this._scenes.map((x) => x.initScene()));
     this.selectScene(0);
 
+    // Schedule first tick
     requestAnimationFrame(this.tick.bind(this));
   }
 
+  /**
+   * Switch the current scene.
+   * @param sceneIndex index into the scenes array
+   */
   public selectScene(sceneIndex: number): void {
     this._sceneRenderer!.reset();
     if (this._currentScene) {
@@ -141,6 +165,10 @@ export class Renderer {
     }
   }
 
+  /**
+   * Switch the current environment.
+   * @param envName name of the environment to select
+   */
   public selectEnv(envName: string): void {
     this._envManager.getEnv(envName).then((envMap) => {
       this._environmentMap = envMap;
@@ -149,6 +177,9 @@ export class Renderer {
     this._currentEnvName = envName;
   }
 
+  /**
+   * Release all WebGL resources associated with the renderer and it's managers.
+   */
   public dispose(): void {
     if (this._disposed) {
       return;
@@ -161,19 +192,34 @@ export class Renderer {
     if (this._disposed) {
       return;
     }
+
+    // Draw the scene
     this._currentScene?.tick(1000.0 / 60.0);
     this._sceneRenderer?.draw();
+
+    // Schedule next tick
     requestAnimationFrame(this.tick.bind(this));
   }
 
+  /**
+   * Register mouse down on the canvas.
+   */
   public onMouseDown(): void {
     this._dragging = true;
   }
 
+  /**
+   * Register mouse up on the canvas.
+   */
   public onMouseUp(): void {
     this._dragging = false;
   }
 
+  /**
+   * Register mouse movement on the canvas.
+   * @param dx
+   * @param dy
+   */
   public onMouseMove(dx: number, dy: number): void {
     if (this._dragging) {
       this._cameraYaw += dx * cameraSensitivityX;
@@ -183,6 +229,10 @@ export class Renderer {
     }
   }
 
+  /**
+   * Register mousewheel movement on the canvas.
+   * @param delta
+   */
   public onMouseWheel(delta: number): void {
     this._cameraZoom = Math.min(Math.max(this._cameraZoom + Math.sign(delta), -12), 3);
     if (this._camera) {

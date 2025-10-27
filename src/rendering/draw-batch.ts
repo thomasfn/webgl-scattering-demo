@@ -14,6 +14,12 @@ export interface DrawBatchItem {
 
 const allDrawFlags = 0xffffffff;
 
+/**
+ * Facilitates drawing several sections sequentially using a single shader program, potentially with different texture and UBO bindings.
+ * Owns a vertex array that binds the shader program to the mesh.
+ * Typically there will be one draw batch per mesh<->material pair that is being drawn in the scene.
+ * The draw batch can also be used to draw "one-off" sections - useful for things like post-process screenquads.
+ */
 export class DrawBatch extends BaseResource {
   private readonly _vao: VertexArray;
   private readonly _items: DrawBatchItem[] = [];
@@ -28,21 +34,33 @@ export class DrawBatch extends BaseResource {
     this._vao = this.addOwnedResource(new VertexArray(context, mesh.getVertexArrayLayout(shaderProgram)));
   }
 
+  /**
+   * Clear the draw batch.
+   */
   public clearEntries(): void {
     this._items.length = 0;
   }
 
+  /**
+   * Add an item to the draw batch.
+   * @param item
+   * @returns the index of the item
+   */
   public addItem(item: DrawBatchItem): number {
     return this._items.push(item) - 1;
   }
 
-  public draw(drawFlags?: number): void {
+  /**
+   * Draw all items in the draw batch.
+   * Will change the renderer state as needed, but won't change unrelated state (e.g. depth/stencil or culling settings).
+   * @param drawFlags if passed, only draw items with overlapping draw flag bits
+   */
+  public draw(drawFlags: number = allDrawFlags): void {
     if (!this.mesh.renderData) {
       throw new Error("Attempt to draw mesh before render data is created");
     }
     this._rendererState.shaderProgram = this.shaderProgram;
     this._rendererState.vertexArray = this._vao;
-    drawFlags ??= allDrawFlags;
     for (const item of this._items) {
       if (((item.drawFlags ?? allDrawFlags) & drawFlags) === 0) {
         continue;
@@ -67,6 +85,13 @@ export class DrawBatch extends BaseResource {
     }
   }
 
+  /**
+   * Draw a single section as if it were an item in the batch.
+   * Does not affect any items in the batch.
+   * @param sectionIndex
+   * @param uboBindings
+   * @param textureBindings
+   */
   public drawOne(
     sectionIndex: number,
     uboBindings: readonly [ubo: UniformBuffer<UnknownStruct>, elementIndex: number, bindIndex: number][],

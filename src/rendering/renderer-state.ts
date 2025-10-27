@@ -29,6 +29,11 @@ export interface CullFaceState {
   readonly cullFaceMode: CullFaceMode;
 }
 
+/**
+ * Singleton that tracks specific grouped WebGL state and deduplicates WebGL calls.
+ * The state will only be updated if the object reference is changed.
+ * Make sure to reuse state description objects as much as possible to reduce redundant WebGL calls.
+ */
 export class RendererState {
   private _shaderProgram: ShaderProgram | null = null;
   private _vertexArray: VertexArray | null = null;
@@ -37,6 +42,9 @@ export class RendererState {
   private _textureBindings: (BaseTexture | null)[] = [];
   private _renderTarget: RenderTarget | null = null;
 
+  /**
+   * Gets or sets the currently active shader program.
+   */
   public get shaderProgram() {
     return this._shaderProgram;
   }
@@ -51,6 +59,9 @@ export class RendererState {
     this._shaderProgram = value;
   }
 
+  /**
+   * Gets or sets the currently bound vertex array.
+   */
   public get vertexArray() {
     return this._vertexArray;
   }
@@ -65,6 +76,9 @@ export class RendererState {
     this._vertexArray = value;
   }
 
+  /**
+   * Gets or sets the current depth/stencil state.
+   */
   public get depthStencil() {
     return this._depthStencil;
   }
@@ -83,6 +97,9 @@ export class RendererState {
     this._depthStencil = value;
   }
 
+  /**
+   * Gets or sets the current face culling state.
+   */
   public get cullFace() {
     return this._cullFace;
   }
@@ -99,6 +116,9 @@ export class RendererState {
     this._cullFace = value;
   }
 
+  /**
+   * Gets or sets the currently bound render target (framebuffer).
+   */
   public get renderTarget() {
     return this._renderTarget;
   }
@@ -121,6 +141,11 @@ export class RendererState {
     }
   }
 
+  /**
+   * Set the currently bound texture for the specified unit.
+   * @param unit 0-31
+   * @param texture texture to bind, or null to unbind
+   */
   public setTexture(unit: number, texture: BaseTexture | null): void {
     if (this._textureBindings[unit] === texture) {
       return;
@@ -134,10 +159,20 @@ export class RendererState {
     this._textureBindings[unit] = texture;
   }
 
+  /**
+   * Get the currently bound texture for the specified unit.
+   * @param unit 0-31
+   * @returns texture bound to that unit, or null for no texture
+   */
   public getTexture(unit: number): BaseTexture | null {
     return this._textureBindings[unit];
   }
 
+  /**
+   * Unbind all texture units.
+   * Note that this will only unbind textures that have been bound via setTexture.
+   * Bindings set outside of this class will not be considered.
+   */
   public unbindAllTextures(): void {
     for (let unit = 0; unit < this._textureBindings.length; ++unit) {
       this.setTexture(unit, null);

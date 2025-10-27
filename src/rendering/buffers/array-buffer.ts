@@ -3,6 +3,10 @@ import { ElementType, ElementTypeToArray, getElementTypeByteSize, getElementType
 
 export type BindingType = WebGL2RenderingContext["ARRAY_BUFFER"] | WebGL2RenderingContext["ELEMENT_ARRAY_BUFFER"];
 
+/**
+ * Strongly-typed wrapper around a WebGL array buffer.
+ * Can be used for both elements and vertices.
+ */
 export class ArrayBuffer<TElementType extends keyof ElementTypeToArray> extends BaseBuffer {
   public readonly elementType: TElementType;
   public readonly elementStride: number;

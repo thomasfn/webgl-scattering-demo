@@ -1,5 +1,9 @@
 import { vec4 } from "gl-matrix";
 
+/**
+ * A logical object that represents a WebGL viewport.
+ * Also provides the means to clear the viewport for the currently bound render target.
+ */
 export class Viewport {
   public constructor(
     private readonly _context: WebGL2RenderingContext,
@@ -9,6 +13,12 @@ export class Viewport {
     public readonly h: number,
   ) {}
 
+  /**
+   * Clear the viewport.
+   * @param clearColor if provided, clear to the given color - if null, colour attachments are not mutated
+   * @param clearDepth if provided, clear to the given depth (in clip-space) - if null, depth attachments are not mutated
+   * @returns
+   */
   public clear(clearColor?: vec4, clearDepth?: number): void {
     let mask: number = 0;
     if (clearColor != null) {
@@ -26,6 +36,9 @@ export class Viewport {
     this._context.clear(mask);
   }
 
+  /**
+   * Set the WebGL viewport for future calls.
+   */
   public use(): void {
     this._context.viewport(this.x, this.y, this.w, this.h);
   }

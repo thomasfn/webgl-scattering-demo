@@ -2,6 +2,10 @@ import { BaseResource } from "../base-resource";
 import { FragmentShader } from "./fragment-shader";
 import { VertexShader } from "./vertex-shader";
 
+/**
+ * Wrapper around a WebGL shader program.
+ * The vertex and fragment shaders must be created externally and provided.
+ */
 export class ShaderProgram extends BaseResource {
   public readonly shaderProgram: WebGLProgram;
 

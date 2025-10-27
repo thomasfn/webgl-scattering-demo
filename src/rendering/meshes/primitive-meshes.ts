@@ -2,6 +2,12 @@ import { ReadonlyVec2, ReadonlyVec3 } from "gl-matrix";
 import { BaseMesh, PrimitiveType, VertexAttribute } from "./base-mesh";
 import { MeshBuilder } from "./mesh-builder";
 
+/**
+ * Construct a simple quad mesh.
+ * The plane will be exactly 1 unit in size and will be aligned across the XY axis.
+ * @param context
+ * @returns
+ */
 export function buildPlaneMesh(context: WebGL2RenderingContext): BaseMesh {
   const builder = new MeshBuilder();
   const positionAttr = builder.addVertexAttribute(VertexAttribute.Position, 0, 3);
@@ -24,6 +30,12 @@ export function buildPlaneMesh(context: WebGL2RenderingContext): BaseMesh {
   return builder.buildMesh(context);
 }
 
+/**
+ * Construct a screen quad mesh.
+ * The screen quad will be aligned to clip-space.
+ * @param context
+ * @returns
+ */
 export function buildScreenQuadMesh(context: WebGL2RenderingContext): BaseMesh {
   const builder = new MeshBuilder();
   const positionAttr = builder.addVertexAttribute(VertexAttribute.Position, 0, 2);
@@ -46,6 +58,12 @@ export function buildScreenQuadMesh(context: WebGL2RenderingContext): BaseMesh {
   return builder.buildMesh(context);
 }
 
+/**
+ * Construct a simple unit sphere mesh.
+ * @param context
+ * @param subDivisions detail level (defaults to 16)
+ * @returns
+ */
 export function buildSphereMesh(context: WebGL2RenderingContext, subDivisions: number = 16): BaseMesh {
   const builder = new MeshBuilder();
   const positionAttr = builder.addVertexAttribute(VertexAttribute.Position, 0, 3);
@@ -107,6 +125,11 @@ const cubeFaceUVs: readonly ReadonlyVec2[] = [
   [0, 1],
 ];
 
+/**
+ * Construct a simple unit cube mesh.
+ * @param context
+ * @returns
+ */
 export function buildCubeMesh(context: WebGL2RenderingContext): BaseMesh {
   const builder = new MeshBuilder();
   const positionAttr = builder.addVertexAttribute(VertexAttribute.Position, 0, 3);

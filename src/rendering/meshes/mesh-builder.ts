@@ -17,11 +17,23 @@ const _crossTangent = vec3.create();
 
 const EPS = 1e-8;
 
+/**
+ * A utility that helps to construct procedurally generated meshes.
+ */
 export class MeshBuilder {
   private _vertexCount: number = 0;
   private readonly _vertexLists: (VertexList & { rawData: number[] })[] = [];
   private readonly _sections: { primitiveType: PrimitiveType; primitiveCount: number; elements: number[] }[] = [];
 
+  /**
+   * Add a vertex attribute to the mesh.
+   * All vertex data is associated with an attribute.
+   * Vertex attributes correspond to vertex lists on a {@link BaseMesh} object.
+   * @param attribute
+   * @param channelIndex
+   * @param componentCount
+   * @returns handle used to set vertex data for this attribute
+   */
   public addVertexAttribute(attribute: VertexAttribute, channelIndex: number, componentCount: number): AttributeIndex {
     const attrIndex = this._vertexLists.length;
     this._vertexLists.push({
@@ -34,6 +46,11 @@ export class MeshBuilder {
     return attrIndex;
   }
 
+  /**
+   * Add a renderable section to the mesh.
+   * @param primitiveType
+   * @returns handle used to add primitives to this section
+   */
   public addSection(primitiveType: PrimitiveType): SectionIndex {
     const sectionIndex = this._sections.length;
     this._sections.push({
@@ -44,10 +61,20 @@ export class MeshBuilder {
     return sectionIndex;
   }
 
+  /**
+   * Append a new, empty vertex.
+   * @returns handle for the vertex
+   */
   public appendVertex(): VertexIndex {
     return this._vertexCount++;
   }
 
+  /**
+   * Assign data to the given attribute for a vertex.
+   * @param vertexIndex vertex previously acquired from {@link appendVertex}
+   * @param attributeIndex attribute previously acquired from {@link addVertexAttribute}
+   * @param value vertex data
+   */
   public setVertexAttribute(
     vertexIndex: VertexIndex,
     attributeIndex: AttributeIndex,
@@ -64,6 +91,12 @@ export class MeshBuilder {
     }
   }
 
+  /**
+   * Retrieve data from the given attribute for a vertex.
+   * @param vertexIndex vertex previously acquired from {@link appendVertex}
+   * @param attributeIndex attribute previously acquired from {@link addVertexAttribute}
+   * @param outValue
+   */
   public getVertexAttribute<T extends number | ReadonlyVec2 | ReadonlyVec3 | ReadonlyVec4>(
     vertexIndex: VertexIndex,
     attributeIndex: AttributeIndex,
@@ -81,6 +114,11 @@ export class MeshBuilder {
     }
   }
 
+  /**
+   * Append a primitive to the mesh.
+   * @param sectionIndex section previously acquired from {@link addSection}
+   * @param primitive vertex list
+   */
   public appendPrimitive(sectionIndex: SectionIndex, primitive: readonly number[]): void {
     const section = this._sections[sectionIndex];
     if (section.primitiveType === PrimitiveType.Triangles) {
@@ -94,6 +132,13 @@ export class MeshBuilder {
     }
   }
 
+  /**
+   * Generate MikkTSpace-style tangents and binormals for the mesh.
+   * Will add new vertex attributes to hold tangent data.
+   * @param positionAttr attribute to fetch positional data from
+   * @param normalAttr attribute to fetch normal data from
+   * @param texCoordAttr attribute to fetch uv data from
+   */
   public generateTangentsAndBinormals(
     positionAttr: AttributeIndex,
     normalAttr: AttributeIndex,
@@ -201,6 +246,11 @@ export class MeshBuilder {
     vec3.scale(outTangentV, _crossTangent, handedness);
   }
 
+  /**
+   * Build a mesh using all data appended to the builder thus far.
+   * @param context
+   * @returns
+   */
   public buildMesh(context: WebGL2RenderingContext): BaseMesh {
     const vertexLists: VertexList[] = [];
     for (const vertexList of this._vertexLists) {

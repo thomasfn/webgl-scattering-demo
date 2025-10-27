@@ -2,6 +2,9 @@ import { BaseResource } from "../base-resource";
 
 const logLineStartRegexp = new RegExp(`^(WARNING|ERROR): ([0-9]+):([0-9]+): (.+)`);
 
+/**
+ * Wrapper around a WebGL shader.
+ */
 export abstract class BaseShader extends BaseResource {
   public readonly shader: WebGLShader;
 

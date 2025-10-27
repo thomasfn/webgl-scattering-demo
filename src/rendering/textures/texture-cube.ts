@@ -50,6 +50,11 @@ const defaultFormat: PixelFormat = {
   type: TextureDataType.UnsignedByte,
 };
 
+/**
+ * Wrapper around a WebGL cubemap texture.
+ * If provided with the face images, the size will be inferred and the images automatically uploaded to the cubemap.
+ * Otherwise, the size must be provided and an empty cubemap is created.
+ */
 export class TextureCube extends BaseTexture {
   public readonly faceWidth: number;
   public readonly faceHeight: number;

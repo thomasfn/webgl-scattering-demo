@@ -115,6 +115,9 @@ export function getHighestMipLevel(lowestDimension: number): number {
   return Math.floor(Math.log2(lowestDimension));
 }
 
+/**
+ * Wrapper around a WebGL texture.
+ */
 export abstract class BaseTexture extends BaseResource {
   public readonly texture: WebGLTexture;
 
@@ -124,7 +127,6 @@ export abstract class BaseTexture extends BaseResource {
   ) {
     super(context);
     this.texture = context.createTexture();
-    context.R8;
   }
 
   protected onDispose(): void {

@@ -42,6 +42,11 @@ const defaultFormat: PixelFormat = {
   type: TextureDataType.UnsignedByte,
 };
 
+/**
+ * Wrapper around a WebGL 2D texture.
+ * If provided with an image, the size will be inferred and the image automatically uploaded to the texture.
+ * Otherwise, the size must be provided and an empty texture is created.
+ */
 export class Texture2D extends BaseTexture {
   public readonly width: number;
   public readonly height: number;

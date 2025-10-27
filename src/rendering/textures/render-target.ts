@@ -42,6 +42,10 @@ function getAttachmentGl(context: WebGL2RenderingContext, attachment: RenderTarg
   }
 }
 
+/**
+ * Wrapper around a WebGL framebuffer.
+ * The textures used as attachments must be created externally and provided.
+ */
 export class RenderTarget extends BaseResource {
   private readonly _framebuffer: WebGLFramebuffer;
 

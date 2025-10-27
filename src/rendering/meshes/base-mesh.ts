@@ -40,6 +40,16 @@ export interface RenderData {
   readonly elementBuffer: ArrayBuffer<ElementType.U16>;
 }
 
+/**
+ * Encapsulates all the vertex and primitive data required to render a mesh.
+ * A mesh holds a number of vertex lists, each of which link to an arbitrary attribute.
+ * In this manner, the specific data a mesh can hold can vary based on requirements.
+ * For example, a simple screenquad probably doesn't need normals and tangents.
+ *
+ * A mesh also holds a number of sections, which are separately renderable groups of primitives.
+ * This is useful to represent multi-material meshes.
+ * All draw operations that occur against a mesh happen in the context of a particular section.
+ */
 export abstract class BaseMesh extends BaseResource {
   private _renderData?: RenderData;
 

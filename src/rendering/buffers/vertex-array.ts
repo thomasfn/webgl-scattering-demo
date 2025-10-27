@@ -15,6 +15,9 @@ export interface VertexArrayLayout {
   readonly elementArrayBuffer: ArrayBuffer<ElementType.U16 | ElementType.U32>;
 }
 
+/**
+ * Wrapper around a WebGL vertex array (VAO).
+ */
 export class VertexArray extends BaseResource {
   public readonly vertexArrayObject: WebGLVertexArrayObject;
   public readonly layout: VertexArrayLayout;

@@ -13,6 +13,13 @@ const tmpVec2 = vec2.create();
 const tmpPrimitive: number[] = [];
 tmpPrimitive.length = 3;
 
+/**
+ * Load a mesh from a .obj file.
+ * @param context
+ * @param data
+ * @param importScale
+ * @returns
+ */
 export function loadMeshFromObj(context: WebGL2RenderingContext, data: string, importScale: number = 1.0): BaseMesh {
   const lines = data.split("\n");
   const v: number[] = [];

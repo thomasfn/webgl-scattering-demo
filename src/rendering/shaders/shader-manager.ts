@@ -8,6 +8,14 @@ const includeDirectiveRegexp = new RegExp(`^\\s*#include\\s+"([a-zA-Z0-9\\-\\./]
 
 const shaderHeader = "#version 300 es";
 
+/**
+ * A singleton that manages shader program acquisition and compilation.
+ * Will fetch shaders via the asset manager and cache them for future reuse.
+ * Shaders must be .glsl files placed in the public/shaders directory.
+ * All shaders must use ES 3.0.
+ *
+ * Adds support for shaders including other shaders via #include preprocessor directive, which is useful to implement and reuse common functionality across shader programs.
+ */
 export class ShaderManager {
   private readonly _vertexShaderCache: Record<string, VertexShader> = {};
   private readonly _fragmentShaderCache: Record<string, FragmentShader> = {};
@@ -18,6 +26,11 @@ export class ShaderManager {
     private readonly _assetManager: AssetManager,
   ) {}
 
+  /**
+   * Asynchronously fetch and the compile the given vertex shader.
+   * @param shaderName must refer to a .glsl file following 'public/shaders/v-{shaderName}.glsl' filename convention
+   * @returns
+   */
   public async getVertexShader(shaderName: string): Promise<VertexShader> {
     if (shaderName in this._vertexShaderCache) {
       return this._vertexShaderCache[shaderName];
@@ -32,6 +45,11 @@ export class ShaderManager {
     return shader;
   }
 
+  /**
+   * Asynchronously fetch and the compile the given fragment shader.
+   * @param shaderName must refer to a .glsl file following 'public/shaders/f-{shaderName}.glsl' filename convention
+   * @returns
+   */
   public async getFragmentShader(shaderName: string): Promise<FragmentShader> {
     if (shaderName in this._fragmentShaderCache) {
       return this._fragmentShaderCache[shaderName];
@@ -46,12 +64,24 @@ export class ShaderManager {
     return shader;
   }
 
+  /**
+   * Asynchronously fetch and the compile the given shaders (if needed) and link them into a shader program.
+   * @param vertexShaderName must refer to a .glsl file following 'public/shaders/v-{shaderName}.glsl' filename convention
+   * @param fragmentShaderName must refer to a .glsl file following 'public/shaders/f-{shaderName}.glsl' filename convention
+   * @returns
+   */
   public async getShaderProgram(vertexShaderName: string, fragmentShaderName: string): Promise<ShaderProgram> {
     const vertexShader = await this.getVertexShader(vertexShaderName);
     const fragmentShader = await this.getFragmentShader(fragmentShaderName);
     return this._resourceManager.addResource(new ShaderProgram(this._context, vertexShader, fragmentShader));
   }
 
+  /**
+   * Link the given previously preloaded shaders into a shader program.
+   * @param vertexShaderName must refer to a .glsl file following 'public/shaders/v-{shaderName}.glsl' filename convention
+   * @param fragmentShaderName must refer to a .glsl file following 'public/shaders/f-{shaderName}.glsl' filename convention
+   * @returns
+   */
   public getShaderProgramSync(vertexShaderName: string, fragmentShaderName: string): ShaderProgram {
     const vertexShader = this._vertexShaderCache[vertexShaderName];
     const fragmentShader = this._fragmentShaderCache[fragmentShaderName];

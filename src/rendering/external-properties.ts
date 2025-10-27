@@ -25,6 +25,32 @@ export interface NumberPropertyOptions {
   readonly step?: number;
 }
 
+/**
+ * Declare a boolean property.
+ * Properties are used to allow the UI to modify aspects of the current scene.
+ * @param name
+ * @param category
+ * @param options
+ * @param description
+ * @returns
+ */
+export function booleanProperty(
+  name: string,
+  category: Category,
+  description?: string,
+): BaseProperty<PropertyType.Boolean> {
+  return { propertyType: PropertyType.Boolean, name, category, description };
+}
+
+/**
+ * Declare a number property.
+ * Properties are used to allow the UI to modify aspects of the current scene.
+ * @param name
+ * @param category
+ * @param options
+ * @param description
+ * @returns
+ */
 export function numberProperty(
   name: string,
   category: Category,
@@ -39,6 +65,15 @@ export interface ColourPropertyOptions {
   readonly alpha: boolean;
 }
 
+/**
+ * Declare a colour property.
+ * Properties are used to allow the UI to modify aspects of the current scene.
+ * @param name
+ * @param category
+ * @param options
+ * @param description
+ * @returns
+ */
 export function colourProperty(
   name: string,
   category: Category,
@@ -52,6 +87,15 @@ export interface OptionPropertyOptions {
   readonly options: readonly [value: number, name: string][];
 }
 
+/**
+ * Declare an option property.
+ * Properties are used to allow the UI to modify aspects of the current scene.
+ * @param name
+ * @param category
+ * @param options
+ * @param description
+ * @returns
+ */
 export function optionProperty(
   name: string,
   category: Category,

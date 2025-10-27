@@ -97,6 +97,13 @@ function getBaseAlignment(componentCount: number): number {
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type UnknownStruct = {};
 
+/**
+ * Strongly-typed wrapper around a WebGL uniform buffer object.
+ * A struct must be provided which defines the layout of the elements within the UBO.
+ * A struct is a hashmap of property names to fields defined using {@link structField}.
+ * The {@link TStruct} generic type can be derived by using 'typeof struct' where struct is your struct definition.
+ * Also provides an allocator for elements within the UBO.
+ */
 export class UniformBuffer<TStruct extends Struct<TStruct>> extends BaseBuffer {
   private readonly _fields: readonly DefinedField[];
   private readonly _elementByteSize: number;

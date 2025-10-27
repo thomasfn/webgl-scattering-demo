@@ -26,6 +26,10 @@ export type CameraView = CameraOrthographicView | CameraPerspectiveView;
 const tmpMat4_1 = mat4.create();
 const tmpMat4_2 = mat4.create();
 
+/**
+ * A logical object that represents a camera in the world.
+ * Has a transform and view properties but does not play host to any specific WebGL state.
+ */
 export class Camera {
   private _view: CameraView;
   private _viewport: Viewport;
@@ -33,6 +37,10 @@ export class Camera {
   public readonly transform = new Transform();
   private _projectionDirty: boolean = false;
 
+  /**
+   * Get or set the view properties for the camera.
+   * Changing the view properties will cause the projection matrix to be recalculated.
+   */
   public get view() {
     return this._view;
   }
@@ -41,6 +49,10 @@ export class Camera {
     this._projectionDirty = true;
   }
 
+  /**
+   * Get or set the viewport for the camera.
+   * Changing the viewport will cause the projection matrix to be recalculated.
+   */
   public get viewport() {
     return this._viewport;
   }
@@ -79,6 +91,11 @@ export class Camera {
     }
   }
 
+  /**
+   * Gets the projection matrix which transforms from view-space to clip-space.
+   * @param out
+   * @returns
+   */
   public getProjectionMatrix(out: mat4): mat4 {
     if (this._projectionDirty) {
       this.rebuildProjection();
@@ -88,6 +105,11 @@ export class Camera {
     return out;
   }
 
+  /**
+   * Gets the projection-view matrix which transforms from world-space to clip-space.
+   * @param out
+   * @returns
+   */
   public getProjectionViewMatrix(out: mat4): mat4 {
     if (this._projectionDirty) {
       this.rebuildProjection();

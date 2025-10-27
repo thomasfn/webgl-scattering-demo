@@ -31,7 +31,6 @@ import {
   MaterialInstance,
   UnknownParams,
 } from "./materials";
-import { AssetManager } from "./asset-manager";
 
 const viewBlockStruct = {
   projectionViewMatrix: structField(ElementType.F32, 16),
@@ -128,6 +127,14 @@ const materialParamBlockBindIndex = 2;
 
 export const allDrawFlags = 0xffffffff;
 
+/**
+ * Singleton that provides opinionated scene rendering.
+ * A scene is defined as a number of scene objects placed in world-space that should be drawn from one or more scene views.
+ * A scene object is defined as section of a mesh, a material used to render the mesh and a world-space transform.
+ * The scene can also be assigned an environment map which will be displayed in the background and used to provide lighting.
+ * Scene views can be drawn to a rendertarget or to the backbuffer, can be rendered using a HDR pipeline and can have one or more post-process effects applied.
+ * Scene objects and scene views can be added and removed at will.
+ */
 export class SceneRenderer extends BaseResource {
   private readonly _envMapShaderProgram: ShaderProgram;
 
@@ -166,6 +173,9 @@ export class SceneRenderer extends BaseResource {
   private readonly _sceneViews: InternalSceneView[] = [];
   private readonly _sceneObjects: InternalSceneObject[] = [];
 
+  /**
+   * Get or set the environment map displayed in the background (for scene views that opt in to it) and used for IBL.
+   */
   public get environmentMap(): TextureCube | undefined {
     return this._environmentMap?.environmentMap;
   }
@@ -190,6 +200,10 @@ export class SceneRenderer extends BaseResource {
     }
   }
 
+  /**
+   * Asynchronously preload all shaders via the given shader manager.
+   * @param shaderManager
+   */
   public static async preloadShaders(shaderManager: ShaderManager): Promise<void> {
     await Promise.all([
       shaderManager.getVertexShader("screenquad"),
@@ -205,7 +219,6 @@ export class SceneRenderer extends BaseResource {
     context: WebGL2RenderingContext,
     private readonly _rendererState: RendererState,
     private readonly _shaderManager: ShaderManager,
-    assetManager: AssetManager,
     private readonly _mainViewport: Viewport,
   ) {
     super(context);
@@ -660,6 +673,14 @@ export class SceneRenderer extends BaseResource {
     });
   }
 
+  /**
+   * Add a scene view to the renderer.
+   * @param camera camera that provides the viewpoint transform and properties
+   * @param viewport section of render target to draw into
+   * @param target render target to draw into, or null for backbuffer
+   * @param props scene view specific properties
+   * @returns scene view handle
+   */
   public addView(camera: Camera, viewport: Viewport, target: RenderTarget | null, props: SceneViewProps): SceneView {
     const toneMapperMaterialInstance = props.hdr
       ? this._toneMapperMaterial.createInstance({
@@ -694,11 +715,24 @@ export class SceneRenderer extends BaseResource {
     return sceneView;
   }
 
+  /**
+   * Remove a scene view from the renderer.
+   * @param view
+   */
   public removeView(view: SceneView): void {
     this._sceneViews.splice(this._sceneViews.indexOf(view as InternalSceneView), 1);
     this._viewBlockUBO.freeElement((view as InternalSceneView).viewBlockView.uniformBufferElementIndex);
   }
 
+  /**
+   * Add a scene object to the renderer.
+   * Don't forget to call {@link updateObjectTransform} directly afterward to initialise the world-space transform.
+   * @param mesh the mesh to draw
+   * @param sectionIndex the section of the mesh to draw
+   * @param material the material to draw with
+   * @param props scene object specific properties
+   * @returns scene object handle
+   */
   public addObject(
     mesh: BaseMesh,
     sectionIndex: number,
@@ -726,16 +760,29 @@ export class SceneRenderer extends BaseResource {
     return sceneObject;
   }
 
+  /**
+   * Update the world-space transform for the given scene object.
+   * It's better to only call this when the transform changes to reduce memory bandwidth usage.
+   * @param object
+   * @param transform
+   */
   public updateObjectTransform(object: SceneObject, transform: Transform): void {
     SceneRenderer.updateSectionBlock(transform, (object as InternalSceneObject).sectionBlockView);
   }
 
+  /**
+   * Remove a scene object from the renderer.
+   * @param object
+   */
   public removeObject(object: SceneObject): void {
     this._sceneObjects.splice(this._sceneObjects.indexOf(object as InternalSceneObject), 1);
     this._sectionBlockUBO.freeElement((object as InternalSceneObject).sectionBlockView.uniformBufferElementIndex);
     // TODO: Purge the object from its draw batch
   }
 
+  /**
+   * Remove all scene views and scene objects from the renderer.
+   */
   public reset(): void {
     this._sceneViews.length = 0;
     this._sceneObjects.length = 0;
@@ -746,11 +793,18 @@ export class SceneRenderer extends BaseResource {
     }
   }
 
+  /**
+   * Update properties related to display of the environment map.
+   * @param materialRoughness 0.0-1.0 - higher = blurrier
+   */
   public updateEnvMapProperties(materialRoughness: number) {
     const view = this._envMapPropertiesUBO.createElementView(0);
     view.envMapMipLevel.set(materialRoughness * (this._environmentMap?.reflectionMap.highestMipLevel ?? 0));
   }
 
+  /**
+   * Draw all scene views now.
+   */
   public draw(): void {
     // Update all view blocks
     for (const sceneView of this._sceneViews) {

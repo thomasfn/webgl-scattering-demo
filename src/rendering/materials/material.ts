@@ -32,6 +32,12 @@ export type NoTextures = { [key: string]: never };
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type UnknownTextures = {};
 
+/**
+ * A strongly-typed object that encapsulates a shader program, a UBO containing parameters for the shader program and the details of texture parameters for the shader program.
+ * Used as a high-level rendering utility for scene rendering.
+ * Can be used to create {@link MaterialInstance}'s which host different sets of parameters and texture bindings for the base material.
+ * Material instances are used to draw scene objects and post-process effect passes.
+ */
 export class Material<
   TParamsStruct extends Struct<TParamsStruct> = UnknownParams,
   TTextureBindingStruct extends Record<string, BaseTexture | undefined> = UnknownTextures,
@@ -77,6 +83,11 @@ export class Material<
     this._textureUnitMappings = textureUnitMappings;
   }
 
+  /**
+   * Create a material instance associated with this material.
+   * @param params optional parameters for the instance - otherwise defaults are used which may not be sensible
+   * @returns
+   */
   public createInstance(
     params?: UniformBufferConcreteOptional<TParamsStruct>,
   ): MaterialInstance<TParamsStruct, TTextureBindingStruct> {

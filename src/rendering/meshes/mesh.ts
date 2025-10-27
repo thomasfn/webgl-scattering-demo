@@ -1,5 +1,8 @@
 import { BaseMesh, Section, VertexList } from "./base-mesh";
 
+/**
+ * A specific type of mesh that is passed vertex and section data externally, e.g. from a MeshBuilder or loaded from a file.
+ */
 export class Mesh extends BaseMesh {
   private readonly _vertexLists: readonly VertexList[];
   private readonly _sections: readonly Section[];

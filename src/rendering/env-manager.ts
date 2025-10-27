@@ -12,6 +12,11 @@ interface EnvCacheData {
   error: Error | null;
 }
 
+/**
+ * Singleton that acquires environment cubemaps from the network.
+ * Handles background loading of face images and exr decoding.
+ * Environment map images must be placed in the public/textures folder and follow a specific naming convention.
+ */
 export class EnvManager extends BaseResource {
   private readonly _envCache: Record<string, EnvCacheData> = {};
   private readonly _fetchQueue: string[] = [];
@@ -29,6 +34,13 @@ export class EnvManager extends BaseResource {
     super(context);
   }
 
+  /**
+   * Asynchronously fetch the environment map by the given name.
+   * Can also be used to begin preloading the environment map.
+   * Only one environment map will be downloaded at a time to limit network thrashing.
+   * @param envName
+   * @returns
+   */
   public getEnv(envName: string): Promise<TextureCube> {
     let envCacheData = this._envCache[envName];
     if (!envCacheData) {

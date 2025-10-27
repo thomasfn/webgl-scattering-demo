@@ -4,6 +4,11 @@ import { DrawBatch, DrawBatchItem } from "../draw-batch";
 import { BaseTexture } from "../textures";
 import type { Material, UnknownParams, UnknownTextures } from "./material";
 
+/**
+ * A strongly-typed object that encapsulates a set of properties and texture bindings for a given draw.
+ * Used as a high-level rendering utility for scene rendering.
+ * Associated with a specific parent {@link Material}.
+ */
 export class MaterialInstance<
   TParamsStruct extends Struct<TParamsStruct> = UnknownParams,
   TTextureBindingStruct extends Record<string, BaseTexture | undefined> = UnknownTextures,
@@ -42,6 +47,14 @@ export class MaterialInstance<
     this._textureUnitMappings = textureUnitMappings;
   }
 
+  /**
+   * Create a draw batch item using this material instance that can be added to a {@link DrawBatch}.
+   * @param sectionIndex
+   * @param materialParamsUboBindIndex
+   * @param otherUboBindings
+   * @param drawFlags
+   * @returns
+   */
   public createDrawBatchItem(
     sectionIndex: number,
     materialParamsUboBindIndex: number,
@@ -58,6 +71,13 @@ export class MaterialInstance<
     };
   }
 
+  /**
+   * Perform a draw now using this material instance via a {@link DrawBatch}.
+   * @param batch
+   * @param sectionIndex
+   * @param materialParamsUboBindIndex
+   * @param otherUboBindings
+   */
   public drawOne(
     batch: DrawBatch,
     sectionIndex: number,
