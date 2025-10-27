@@ -1,3 +1,8 @@
+// Light scattering algorithm
+// Note: volume texture support is disabled currently - it may be added back in the future
+//       volume textures were used in the actual game to modify the scattering coefficient at different points
+//       combined with scrolling UVWs it adds some nice variation and animation to the effect
+
 struct ScatterVolumeProps {
   vec3 LightEmission;
   vec4 LightTransform;
@@ -11,19 +16,25 @@ struct ScatterVolumeProps {
 // Texture3D VolumeTexture;
 // SamplerState VolumeTextureSampler;
 // float ScatteringCoefficientHigh;
-//     //vec3 AmbientCoefficientsHigh;
+// vec3 AmbientCoefficientsHigh;
 // #endif
 };
 
+// Scattering function
+// - a positive k value results in forward scattering
+// - a zero k value results in light scattering equally in all directions
+// - a negative k value results in back scattering
 float _schlickPhase(float cosTheta, float k) {
   float inner = (1.0 + k * cosTheta);
   return (1.0 - k * k) / (4.0 * PI * inner * inner);
 }
 
+// Beer's law - simulate light absorption by a volume over a distance
 vec3 _transportThroughVolume(in ScatterVolumeProps volumeProps, float length) {
   return exp(volumeProps.AbsorptionCoefficients * -(length * 100.0));
 }
 
+// Calculate how much light reaches the given point from the light source, and is scattered toward the ray
 vec3 _lightSourceContrib(in ScatterVolumeProps volumeProps, vec3 pos, vec3 dir) {
   vec3 lightPos = volumeProps.LightTransform.xyz;
   vec3 vecFromLight = pos - lightPos;
@@ -46,6 +57,7 @@ vec3 _lightSourceContrib(in ScatterVolumeProps volumeProps, vec3 pos, vec3 dir) 
   return volumeProps.LightEmission * emissionCoeff * absorptionToPos * scatterPhase;
 }
 
+// Accumulate light along the ray, including ambient term
 vec3 _sampleStep(in ScatterVolumeProps volumeProps, vec3 pos, vec3 dir, float stepLength, float accumStepLength) {
   vec3 illuminationFromLightSource = _lightSourceContrib(volumeProps, pos, dir);
   vec3 ambientIllumination = volumeProps.AmbientCoefficients * stepLength;
